@@ -1,5 +1,5 @@
 ---
-title: "Candidate Event Tracker"
+title: "Facts First Database"
 resource_files:
 - .httr-oauth
 output:
@@ -27,123 +27,9 @@ library(htmltools)
 library(tigris)
 options(tigris_class = "sf")
 
+#use saved version of data (for now during development)
+fcheck <- readRDS("saved_versions/fcheck_0711.rds")
 
-
-### DATA LOADING AND PREP
-
-# import data from Google Sheet 
-
-#register DW's 2020 google sheet using stored sheet id key 
-mykey <- Sys.getenv("DW2020_KEY")
-dw2020 <- gs_key(mykey)
-
-#read in all the data in the rally/event tab
-events <- dw2020 %>% 
-  gs_read(ws = "AK VER Rally / Event Tracker") %>% 
-  clean_names() 
-
-#set formatting of certain columns
-events <- events %>% 
-  mutate(
-    date = mdy(date),
-    thru_date = mdy(thru_date),
-    cand_fullname = as.factor(cand_fullname),
-    state = as.factor(state),
-    cd_if_known = as.factor(cd_if_known),
-    event_type = as.factor(event_type),
-    cand_fullname = as.factor(cand_fullname),
-    cand_lastname = as.factor(cand_lastname),
-    sponsor = as.factor(sponsor)
-         )
-
-saveRDS(events, "events_saved.rds")
-
-#by state counts - only PAST events
-bystate <- events %>% 
-  filter(date < Sys.Date()) %>% 
-  count(state) %>% 
-  arrange(desc(n)) %>% 
-  head(10)
-#reorder factors to order bars descending
-bystate <- bystate %>% 
-  mutate(
-    state = as.factor(state),
-    state = fct_reorder(state, desc(n))
-    )
-
-
-# by cand_fullname counts to date - only PAST events
-bycand <- events %>%
-  filter(date < Sys.Date()) %>%  
-  count(cand_fullname) %>%
-  arrange(desc(n)) %>% 
-  head(10)
-#reorder factors to order bars descending
-bycand <- bycand %>%
-  mutate(
-    cand_fullname = as.factor(cand_fullname),
-    cand_fullname = fct_reorder(cand_fullname, desc(n))
-    )
-
-
-#slimmed version of table for display in summary tab
-events_selectcols <- events %>% 
-  select(cand_fullname, 
-         date, 
-         # thru_date,
-         city, 
-         state, 
-         addtl_cities, 
-         event_type, 
-         sponsor, 
-         description)
-
-
-
-# INTERVIEWS/REMARKS DATA #####
-# 
-# keyremarks <- dw2020 %>%
-#   gs_read(ws = "Key Interviews/Remarks") %>%
-#   clean_names()
-# 
-# keyremarks <- keyremarks %>% 
-#   mutate(
-#     date = dmy(date),
-#     candidate = as.factor(candidate),
-#     venue = as.factor(venue),
-#     subject_1 = as.factor(subject_1),
-#     subject_2 = as.factor(subject_2),
-#     state = as.factor(state),
-#     on_cam = as.factor(on_cam)
-#   )
-
-### CANDIDATE ANNOUNCEMENTS DATA ####
-announcements <- dw2020 %>%
-  gs_read(ws = "Candidate Announcements") %>%
-  clean_names() %>% 
-  mutate(
-    date = mdy(date)
-  ) %>% 
-  select(-x7, -x8) %>% 
-  arrange(desc(date))
-
-announcements$date <- format(announcements$date, "%m/%d/%Y")
-
-
-### GEOGRAPHIC DATA ####
-
-# # Downloading the shapefiles for states at the lowest resolution from tigris
-# states <- states(cb=T)
-# #save result
-# saveRDS(states, "states_saved.rds")
-
-## use saved version to pull states from to save processing time (comment out code above when doing so)
-states <- readRDS("states_saved.rds")
-
-
-
-# write_csv(events, "events_temp.csv")
-# write_csv(bystate, "bystate.csv")
 
 # set time object set to EST
 d <- Sys.Date()
