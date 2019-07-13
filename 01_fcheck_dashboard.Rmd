@@ -156,17 +156,40 @@ ee_nomenu
 ```
 
 
-
-
-
-Upcoming Events Breakdown
-=====================================
-
-
-Row {data-height=300}
+Row 
 -----------------------------------------------------------------------
 
+### Most common subjects
 
+```{r}
+
+bysubject <- fcheck %>% 
+  count(subject) %>% 
+  arrange(desc(n)) %>% 
+  head() %>% 
+  ungroup()
+
+
+e <- ggplot(data = bysubject, aes(x = subject, y = n)) +
+  geom_col(
+    # color = "#848484",
+    fill = "#FFC966") +
+  # coord_flip() +
+  theme_minimal()
+
+e2 <- e + labs(x ="", y = "") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  # scale_fill_manual(values=cbPalette) +
+  theme(legend.title=element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ee <- ggplotly(e2)
+
+ee_nomenu <- ee %>% config(displayModeBar = FALSE)
+ee_nomenu
+
+
+```
 
 
 
