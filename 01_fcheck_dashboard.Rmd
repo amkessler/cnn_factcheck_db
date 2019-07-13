@@ -1,5 +1,5 @@
 ---
-title: "Facts First Database"
+title: "Facts First Transitional App"
 resource_files:
 - .httr-oauth
 output:
@@ -44,12 +44,12 @@ t <- .POSIXct(t, "EST")
 ```
 
 
-Table and Summary Charts
+Searchable Database
 ===================================== 
-CNN Fact Checks through `r format(d, format="%b %d")`. To filter, click on the boxes above the columns. To sort, use the up/down arrows by the column names. To search globally by keywords, use the search box on the upper right. (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`) 
+Published fact checks through `r format(d, format="%b %d")`. To filter, click on the boxes above the columns. To sort, use the up/down arrows by the column names. To search globally by keywords, use the search box on the right. (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`) 
 <!-- (This dashboard was last updated at `r format(Sys.time(), "%a %b %d %X")`)  -->
 
-Row {data-height=650}
+Row 
 -----------------------------------------------------------------------
 
 ### {data-width=800}
@@ -58,7 +58,16 @@ Row {data-height=650}
 
 #searchable table
 
-datatable(fcheck, 
+fcheck_table <- fcheck %>% 
+  select(candidate,
+         date,
+         spectrum_of_truth,
+         subject,
+         claim,
+         fact_check,
+         link)
+
+datatable(fcheck_table, 
           rownames = FALSE, 
           filter = "top",
           options = list(searchHighlight = TRUE)) %>% 
@@ -67,11 +76,14 @@ datatable(fcheck,
   formatStyle('candidate', fontWeight = 'bold') 
 
 
-
-
-
 ```
 
+
+Summary Counts
+=====================================
+
+Row 
+-----------------------------------------------------------------------
 
 
 ### Totals by truth spectrum
@@ -115,23 +127,23 @@ bycand <- fcheck %>%
   ungroup()
 
 
-d <- ggplot(data = bycand, aes(x = bycand, y = n)) +
+e <- ggplot(data = bycand, aes(x = candidate, y = n)) +
   geom_col(
     # color = "#848484",
     fill = "#FFC966") +
   # coord_flip() +
   theme_minimal()
 
-d2 <- d + labs(x ="", y = "") +
+e2 <- e + labs(x ="", y = "") +
   theme(plot.title = element_text(hjust = 0.5)) +
   # scale_fill_manual(values=cbPalette) +
   theme(legend.title=element_blank()) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-dd <- ggplotly(d2)
+ee <- ggplotly(e2)
 
-dd_nomenu <- dd %>% config(displayModeBar = FALSE)
-dd_nomenu
+ee_nomenu <- ee %>% config(displayModeBar = FALSE)
+ee_nomenu
 
 
 ```
@@ -156,4 +168,4 @@ Questions?
 
 Row 
 -----------------------------------------------------------------------
-If you have any questions about this candidate tracker, please give a shout to Aaron Kessler in the DC bureau at Aaron.Kessler@turner.com. Thanks!
+If you have any questions about this candidate tracker, please give a shout to Aaron Kessler in the DC bureau at Aaron.Kessler@turner.com. 
