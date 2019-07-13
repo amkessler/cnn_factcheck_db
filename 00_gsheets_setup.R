@@ -7,12 +7,12 @@ library(ggmap)
 library(plotly)
 library(RColorBrewer)
 
-#this will trigger a web page to authenticate with google account
-gs_ls() 
 
+#this will trigger a web page to authenticate with google account
+# gs_ls() 
 
 #register google sheet
-mykey <- Sys.getenv("CNNFCHECK_KEY")
+mykey <- Sys.getenv("CNNfcheck_KEY")
 fc2020 <- gs_key(mykey)
 
 #open in brower
@@ -46,11 +46,16 @@ saveRDS(fcheck, "saved_versions/fcheck_0711.rds")
 
 
 
+### local use -- start here with loading saved file instead of above: ####
+fcheck <- readRDS("saved_versions/fcheck_0711.rds")
+
+
+
 # EXPLORATORY ANALYSIS #### ---------------------------------
 
 #some exploring 
-events %>% 
-  count(state) %>% 
+fcheck %>% 
+  count(candidate) %>% 
   arrange(desc(n)) 
 
 events %>% 
