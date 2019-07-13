@@ -72,23 +72,40 @@ fcheck %>%
   count(source) %>% 
   arrange(desc(n)) 
 
-
 fcheck %>% 
   count(spectrum_of_truth, candidate) %>% 
   arrange(spectrum_of_truth, desc(n)) 
 
 
+### filter for just CNN fact checks ####
+fcheck_cnn <- fcheck %>% 
+  filter(source == "CNN")
+
+#now we'll run counts on just the cnn records
+fcheck_cnn %>% 
+  count(candidate) %>% 
+  arrange(desc(n)) %>% 
+  head()
+
+fcheck_cnn %>% 
+  count(spectrum_of_truth) %>% 
+  arrange(desc(n))
+
+fcheck_cnn %>% 
+  count(subject) %>% 
+  arrange(desc(n)) %>% 
+  head()
+
+fcheck_cnn %>% 
+  count(spectrum_of_truth, candidate) %>% 
+  arrange(spectrum_of_truth, desc(n)) 
+
+fcheck_cnn %>% 
+  count(spectrum_of_truth, subject) %>% 
+  arrange(spectrum_of_truth, desc(n)) 
 
 
 
-
-
-
-
-events %>% 
-  filter(date < today("EST")) %>% 
-  count(cand_fullname, state) %>% 
-  arrange(cand_fullname, desc(n)) 
 
 
 # build gt tables ####
