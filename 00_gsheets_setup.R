@@ -46,8 +46,10 @@ saveRDS(fcheck, "saved_versions/fcheck_0711.rds")
 
 
 
+
 ### local use -- start here with loading saved file instead of above: ####
 fcheck <- readRDS("saved_versions/fcheck_0711.rds")
+
 
 
 
@@ -58,12 +60,29 @@ fcheck %>%
   count(candidate) %>% 
   arrange(desc(n)) 
 
-events %>% 
-  count(cand_fullname) %>% 
+fcheck %>% 
+  count(spectrum_of_truth) %>% 
+  arrange(desc(n))
+
+fcheck %>% 
+  count(subject) %>% 
   arrange(desc(n)) 
 
-events_selectcols <- events %>% 
-  select(date, cand_fullname, city, state, event_type, sponsor, description)
+fcheck %>% 
+  count(source) %>% 
+  arrange(desc(n)) 
+
+
+fcheck %>% 
+  count(spectrum_of_truth, candidate) %>% 
+  arrange(spectrum_of_truth, desc(n)) 
+
+
+
+
+
+
+
 
 
 events %>% 
