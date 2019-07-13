@@ -30,6 +30,9 @@ options(tigris_class = "sf")
 #use saved version of data (for now during development)
 fcheck <- readRDS("saved_versions/fcheck_0711.rds")
 
+fcheck <- fcheck %>% 
+  filter(source == "CNN")
+
 
 # set time object set to EST
 d <- Sys.Date()
@@ -41,9 +44,9 @@ t <- .POSIXct(t, "EST")
 ```
 
 
-Summary Charts and Table
+Table and Summary Charts
 ===================================== 
-Trips from Nov 06 through `r format(d, format="%b %d")`. To filter, click on the boxes above the columns. To sort, use the up/down arrows by the column names. *Note: if a candidate visits multiple cities in the same state, on the same campaign swing, they are counted below as one campaign trip. The additional locations are included in the "addtl_cities" column.*  (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`) 
+CNN Fact Checks through `r format(d, format="%b %d")`. To filter, click on the boxes above the columns. To sort, use the up/down arrows by the column names. To search globally by keywords, use the search box on the upper right. (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`) 
 <!-- (This dashboard was last updated at `r format(Sys.time(), "%a %b %d %X")`)  -->
 
 Row {data-height=650}
@@ -53,18 +56,15 @@ Row {data-height=650}
 
 ```{r}
 
-#filter only past events
+#searchable table
 
-events_past <- events_selectcols %>%
-  filter(date <= today("EST"))
-
-datatable(events_past, 
+datatable(fcheck, 
           rownames = FALSE, 
           filter = "top",
           options = list(searchHighlight = TRUE)) %>% 
   formatDate('date', 'toDateString') %>%  
   # formatDate('thru_date', 'toDateString') %>%
-  formatStyle('cand_fullname', fontWeight = 'bold') 
+  formatStyle('candidate', fontWeight = 'bold') 
 
 
 
@@ -73,71 +73,49 @@ datatable(events_past,
 ```
 
 
-### How many trips a candidate's taken to each state {data-width=200}
+
+### Totals by truth spectrum
 
 ```{r}
 
-#filter only past events
-
-events_past_grp <- events_selectcols %>%
-  filter(date <= today("EST")) %>% 
-  count(cand_fullname, state) %>% 
-  arrange(cand_fullname, desc(n)) %>% 
-  rename(trips = n)
-
-datatable(events_past_grp, 
-          rownames = FALSE, 
-          # filter = "top",
-          options = list(bPaginate = FALSE, 
-                         searching = FALSE
-    #                      initComplete = JS(
-    # "function(settings, json) {",
-    # "$(this.api().table().header()).css({'background-color': '#EE82EE', 'color': '#fff'});",
-    # "}")
-                         )
-          )
+byspectrum <- fcheck %>% 
+  count(spectrum_of_truth) 
 
 
-
-```
-
-
-Row {data-height=350}
------------------------------------------------------------------------
-
-### Top states for trips since midterm election
-
-```{r}
-
-
-d <- ggplot(data = bystate, aes(x = state, y = n)) +
+d <- ggplot(data = byspectrum, aes(x = spectrum_of_truth, y = n)) +
   geom_col(
     # color = "#848484",
-    fill = "#ffb3ba") + 
-  # coord_flip() + 
+    fill = "#FFC966") +
+  # coord_flip() +
   theme_minimal()
 
 d2 <- d + labs(x ="", y = "") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  # scale_fill_manual(values=cbPalette) +
   theme(legend.title=element_blank()) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-dd <- ggplotly(d2) 
+dd <- ggplotly(d2)
 
 dd_nomenu <- dd %>% config(displayModeBar = FALSE)
 dd_nomenu
-  
 
 
 ```
 
 
-### Candidates with most trips since midterm election
+### Candidates with most fact checks
 
 ```{r}
 
+bycand <- fcheck %>% 
+  count(candidate) %>% 
+  arrange(desc(n)) %>% 
+  head() %>% 
+  ungroup()
 
 
-d <- ggplot(data = bycand, aes(x = cand_fullname, y = n)) +
+d <- ggplot(data = bycand, aes(x = bycand, y = n)) +
   geom_col(
     # color = "#848484",
     fill = "#FFC966") +
