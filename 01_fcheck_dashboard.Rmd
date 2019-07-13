@@ -1,0 +1,691 @@
+---
+title: "Candidate Event Tracker"
+resource_files:
+- .httr-oauth
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+
+library(flexdashboard)
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(glue)
+library(plotly)
+library(DT)
+library(googlesheets)
+library(kableExtra)
+library(leaflet)
+# library(ggmap)
+library(RColorBrewer)
+library(htmlwidgets)
+library(htmltools)
+library(tigris)
+options(tigris_class = "sf")
+
+
+
+### DATA LOADING AND PREP
+
+# import data from Google Sheet 
+
+#register DW's 2020 google sheet using stored sheet id key 
+mykey <- Sys.getenv("DW2020_KEY")
+dw2020 <- gs_key(mykey)
+
+#read in all the data in the rally/event tab
+events <- dw2020 %>% 
+  gs_read(ws = "AK VER Rally / Event Tracker") %>% 
+  clean_names() 
+
+#set formatting of certain columns
+events <- events %>% 
+  mutate(
+    date = mdy(date),
+    thru_date = mdy(thru_date),
+    cand_fullname = as.factor(cand_fullname),
+    state = as.factor(state),
+    cd_if_known = as.factor(cd_if_known),
+    event_type = as.factor(event_type),
+    cand_fullname = as.factor(cand_fullname),
+    cand_lastname = as.factor(cand_lastname),
+    sponsor = as.factor(sponsor)
+         )
+
+saveRDS(events, "events_saved.rds")
+
+#by state counts - only PAST events
+bystate <- events %>% 
+  filter(date < Sys.Date()) %>% 
+  count(state) %>% 
+  arrange(desc(n)) %>% 
+  head(10)
+#reorder factors to order bars descending
+bystate <- bystate %>% 
+  mutate(
+    state = as.factor(state),
+    state = fct_reorder(state, desc(n))
+    )
+
+
+# by cand_fullname counts to date - only PAST events
+bycand <- events %>%
+  filter(date < Sys.Date()) %>%  
+  count(cand_fullname) %>%
+  arrange(desc(n)) %>% 
+  head(10)
+#reorder factors to order bars descending
+bycand <- bycand %>%
+  mutate(
+    cand_fullname = as.factor(cand_fullname),
+    cand_fullname = fct_reorder(cand_fullname, desc(n))
+    )
+
+
+#slimmed version of table for display in summary tab
+events_selectcols <- events %>% 
+  select(cand_fullname, 
+         date, 
+         # thru_date,
+         city, 
+         state, 
+         addtl_cities, 
+         event_type, 
+         sponsor, 
+         description)
+
+
+
+# INTERVIEWS/REMARKS DATA #####
+# 
+# keyremarks <- dw2020 %>%
+#   gs_read(ws = "Key Interviews/Remarks") %>%
+#   clean_names()
+# 
+# keyremarks <- keyremarks %>% 
+#   mutate(
+#     date = dmy(date),
+#     candidate = as.factor(candidate),
+#     venue = as.factor(venue),
+#     subject_1 = as.factor(subject_1),
+#     subject_2 = as.factor(subject_2),
+#     state = as.factor(state),
+#     on_cam = as.factor(on_cam)
+#   )
+
+### CANDIDATE ANNOUNCEMENTS DATA ####
+announcements <- dw2020 %>%
+  gs_read(ws = "Candidate Announcements") %>%
+  clean_names() %>% 
+  mutate(
+    date = mdy(date)
+  ) %>% 
+  select(-x7, -x8) %>% 
+  arrange(desc(date))
+
+announcements$date <- format(announcements$date, "%m/%d/%Y")
+
+
+### GEOGRAPHIC DATA ####
+
+# # Downloading the shapefiles for states at the lowest resolution from tigris
+# states <- states(cb=T)
+# #save result
+# saveRDS(states, "states_saved.rds")
+
+## use saved version to pull states from to save processing time (comment out code above when doing so)
+states <- readRDS("states_saved.rds")
+
+
+
+# write_csv(events, "events_temp.csv")
+# write_csv(bystate, "bystate.csv")
+
+# set time object set to EST
+d <- Sys.Date()
+# d <- .POSIXct(d, "EST")
+  
+t <- Sys.time()
+t <- .POSIXct(t, "EST")
+
+```
+
+
+Summary Charts and Table
+===================================== 
+Trips from Nov 06 through `r format(d, format="%b %d")`. To filter, click on the boxes above the columns. To sort, use the up/down arrows by the column names. *Note: if a candidate visits multiple cities in the same state, on the same campaign swing, they are counted below as one campaign trip. The additional locations are included in the "addtl_cities" column.*  (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`) 
+<!-- (This dashboard was last updated at `r format(Sys.time(), "%a %b %d %X")`)  -->
+
+Row {data-height=650}
+-----------------------------------------------------------------------
+
+### {data-width=800}
+
+```{r}
+
+#filter only past events
+
+events_past <- events_selectcols %>%
+  filter(date <= today("EST"))
+
+datatable(events_past, 
+          rownames = FALSE, 
+          filter = "top",
+          options = list(searchHighlight = TRUE)) %>% 
+  formatDate('date', 'toDateString') %>%  
+  # formatDate('thru_date', 'toDateString') %>%
+  formatStyle('cand_fullname', fontWeight = 'bold') 
+
+
+
+
+
+```
+
+
+### How many trips a candidate's taken to each state {data-width=200}
+
+```{r}
+
+#filter only past events
+
+events_past_grp <- events_selectcols %>%
+  filter(date <= today("EST")) %>% 
+  count(cand_fullname, state) %>% 
+  arrange(cand_fullname, desc(n)) %>% 
+  rename(trips = n)
+
+datatable(events_past_grp, 
+          rownames = FALSE, 
+          # filter = "top",
+          options = list(bPaginate = FALSE, 
+                         searching = FALSE
+    #                      initComplete = JS(
+    # "function(settings, json) {",
+    # "$(this.api().table().header()).css({'background-color': '#EE82EE', 'color': '#fff'});",
+    # "}")
+                         )
+          )
+
+
+
+```
+
+
+Row {data-height=350}
+-----------------------------------------------------------------------
+
+### Top states for trips since midterm election
+
+```{r}
+
+
+d <- ggplot(data = bystate, aes(x = state, y = n)) +
+  geom_col(
+    # color = "#848484",
+    fill = "#ffb3ba") + 
+  # coord_flip() + 
+  theme_minimal()
+
+d2 <- d + labs(x ="", y = "") +
+  theme(legend.title=element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+dd <- ggplotly(d2) 
+
+dd_nomenu <- dd %>% config(displayModeBar = FALSE)
+dd_nomenu
+  
+
+
+```
+
+
+### Candidates with most trips since midterm election
+
+```{r}
+
+
+
+d <- ggplot(data = bycand, aes(x = cand_fullname, y = n)) +
+  geom_col(
+    # color = "#848484",
+    fill = "#FFC966") +
+  # coord_flip() +
+  theme_minimal()
+
+d2 <- d + labs(x ="", y = "") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  # scale_fill_manual(values=cbPalette) +
+  theme(legend.title=element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+dd <- ggplotly(d2)
+
+dd_nomenu <- dd %>% config(displayModeBar = FALSE)
+dd_nomenu
+
+
+```
+
+
+
+
+
+Upcoming Events Breakdown
+=====================================
+
+
+Row {data-height=300}
+-----------------------------------------------------------------------
+
+### Next trip happening
+
+```{r}
+
+t <- events %>%
+  filter(date > today("EST"))
+
+next_date <- min(t$date)
+
+
+day <- as.character(day(next_date))
+month <- as.character(month(next_date))
+
+h_desc <- glue("{month}/{day}")
+
+valueBox(h_desc, icon = "fa-pencil", color = "#E76F61")
+
+
+```
+
+### Total trips since midterms
+
+```{r}
+
+### figure out which hearing is next?
+tot <- events %>%
+  filter(date < today("EST")) %>%
+  nrow()
+
+valueBox(tot, icon = "fa-step-backward", color = "#F3B279")
+
+
+```
+
+### Total scheduled trips ahead
+
+```{r}
+
+### figure out which hearing is next?
+tot_ahead <- events %>%
+  filter(date > today("EST")) %>%
+  nrow()
+
+valueBox(tot_ahead, icon = "fa-plane", color = "#48B052")
+
+
+```
+
+
+Row {data-height=700}
+-----------------------------------------------------------------------
+
+### Trips coming up over the next week
+
+```{r}
+
+next5 <- events %>% 
+  filter(date > Sys.Date(),
+         date < (Sys.Date()+7)) %>% 
+  mutate(location = paste0(city, ", ", state)) %>% 
+  select(cand_lastname, date, location, addtl_cities, event_type, description) %>% 
+  arrange(date)
+
+#remove NA's from city descriptions without a city
+next5$location <- str_remove(next5$location, "NA, ")
+
+next5$date <- format(next5$date, "%m/%d/%Y")
+
+next5 %>% 
+    kable() %>% 
+    kable_styling(bootstrap_options = c("striped"), 
+                full_width = F,
+                position = "left")
+
+
+```
+
+
+### Trips per state over the next week
+
+```{r}
+
+#### STATE BY STATE SHADED MAP ####
+
+upcoming_states <- events %>% 
+  filter(date > Sys.Date(),
+         date < (Sys.Date()+7)) %>% 
+  group_by(state) %>%
+  summarize(total=n()) 
+
+# Now we use the Tigris function geo_join to bring together 
+# are the two columns they'll be joined by
+states_merged_sb <- geo_join(states, upcoming_states, "STUSPS", "state")
+
+# Creating a color palette based on the number range in the total column
+pal <- colorNumeric("YlGn", domain=states_merged_sb$total)
+
+# Getting rid of rows with NA values
+# Using the Base R method of filtering subset() because we're dealing with a SpatialPolygonsDataFrame and not a normal data frame, thus filter() wouldn't work
+states_merged_sb <- subset(states_merged_sb, !is.na(total))
+states_merged_sb$total <- as.integer(states_merged_sb$total)
+
+#create map with hover popups
+
+popup_sb <- paste0("Trips over coming week: ", as.character(states_merged_sb$total))
+
+leaflet() %>%
+  addTiles() %>%
+  # setView(-98.483330, 38.712046, zoom = 4) %>% 
+  addPolygons(data = states_merged_sb , 
+              fillColor = ~pal(states_merged_sb$total), 
+              fillOpacity = 0.9, 
+              weight = 0.2, 
+              smoothFactor = 0.2,
+              highlight = highlightOptions(
+                weight = 5,
+                color = "#666",
+                fillOpacity = 0.7,
+                bringToFront = TRUE),
+              label=popup_sb,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")) %>%
+  addLegend(pal = pal, 
+            values = states_merged_sb$total,
+            bins = 4,
+            position = "bottomright", 
+            title = "Total trips", 
+            labFormat = labelFormat(digits = 0)
+            )
+
+# 
+# mymap %>% 
+#   addTiles()
+
+
+
+```
+
+
+
+
+
+Detailed Event Data 
+=====================================
+To filter, click on the boxes at the top of the columns. To sort, use the up/down arrows by the column names.
+
+Row {data-height=1000}
+-----------------------------------------------------------------------
+
+```{r}
+
+ev_big <- events %>% 
+  select(-cand_restname, -cand_lastname, -cd_if_known, -county) %>% 
+  mutate(
+    approx_date = as.factor(approx_date),
+    city = as.factor(city)
+    )
+
+datatable(ev_big,
+          rownames = FALSE,
+          filter = "top",
+          extensions = 'Buttons',
+          options = list(searchHighlight = TRUE, bPaginate = FALSE, dom = 'Bfrtip',
+     buttons = c('copy', 'excel', 'pdf', 'print')
+          )) %>%
+  formatDate('date', 'toLocaleDateString') %>%
+  formatDate('thru_date', 'toLocaleDateString') %>%
+  formatStyle('cand_fullname', fontWeight = 'bold')
+
+
+```
+
+
+
+
+
+Maps: State by State
+=====================================
+Maps
+
+Row 
+-----------------------------------------------------------------------
+
+### Total trips to date by all candidates
+
+```{r}
+
+#### STATE BY STATE SHADED MAP ####
+
+upcoming_states <- events %>% 
+  filter(date <= Sys.Date()) %>% 
+  group_by(state) %>%
+  summarize(total=n()) 
+
+# Now we use the Tigris function geo_join to bring together 
+# are the two columns they'll be joined by
+states_merged_sb <- geo_join(states, upcoming_states, "STUSPS", "state")
+
+# Creating a color palette based on the number range in the total column
+pal <- colorNumeric("YlOrRd", domain=states_merged_sb$total)
+
+# Getting rid of rows with NA values
+# Using the Base R method of filtering subset() because we're dealing with a SpatialPolygonsDataFrame and not a normal data frame, thus filter() wouldn't work
+states_merged_sb <- subset(states_merged_sb, !is.na(total))
+states_merged_sb$total <- as.integer(states_merged_sb$total)
+
+#create map with hover popups
+
+popup_sb <- paste0("Trips: ", as.character(states_merged_sb$total))
+
+leaflet() %>%
+  addTiles() %>%
+  # setView(-98.483330, 38.712046, zoom = 4) %>% 
+  addPolygons(data = states_merged_sb , 
+              fillColor = ~pal(states_merged_sb$total), 
+              fillOpacity = 0.9, 
+              weight = 0.2, 
+              smoothFactor = 0.2,
+              highlight = highlightOptions(
+                weight = 5,
+                color = "#666",
+                fillOpacity = 0.7,
+                bringToFront = TRUE),
+              label=popup_sb,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")) %>%
+  addLegend(pal = pal, 
+            values = states_merged_sb$total,
+            # bins = 4,
+            position = "bottomright", 
+            title = "Total trips", 
+            labFormat = labelFormat(digits = 0)
+            )
+
+
+
+```
+
+
+### All known upcoming trips (subject to change)
+
+```{r}
+
+#### STATE BY STATE SHADED MAP ####
+
+upcoming_states <- events %>% 
+  filter(date > Sys.Date()) %>% 
+  group_by(state) %>%
+  summarize(total=n()) 
+
+# Now we use the Tigris function geo_join to bring together 
+# are the two columns they'll be joined by
+states_merged_sb <- geo_join(states, upcoming_states, "STUSPS", "state")
+
+# Creating a color palette based on the number range in the total column
+pal <- colorNumeric("YlGn", domain=states_merged_sb$total)
+
+# Getting rid of rows with NA values
+# Using the Base R method of filtering subset() because we're dealing with a SpatialPolygonsDataFrame and not a normal data frame, thus filter() wouldn't work
+states_merged_sb <- subset(states_merged_sb, !is.na(total))
+states_merged_sb$total <- as.integer(states_merged_sb$total)
+
+#create map with hover popups
+
+popup_sb <- paste0("Upcoming trips: ", as.character(states_merged_sb$total))
+
+leaflet() %>%
+  addTiles() %>%
+  # setView(-98.483330, 38.712046, zoom = 4) %>% 
+  addPolygons(data = states_merged_sb , 
+              fillColor = ~pal(states_merged_sb$total), 
+              fillOpacity = 0.9, 
+              weight = 0.2, 
+              smoothFactor = 0.2,
+              highlight = highlightOptions(
+                weight = 5,
+                color = "#666",
+                fillOpacity = 0.7,
+                bringToFront = TRUE),
+              label=popup_sb,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")) %>%
+  addLegend(pal = pal, 
+            values = states_merged_sb$total,
+            # bins = 4,
+            position = "bottomright", 
+            title = "Total trips", 
+            labFormat = labelFormat(digits = 0)
+            )
+
+
+
+```
+
+Row 
+-----------------------------------------------------------------------
+
+### Total trips since midterms
+
+```{r}
+
+### figure out which hearing is next?
+tot <- events %>%
+  filter(date < today("EST")) %>%
+  nrow()
+
+valueBox(tot, icon = "fa-step-backward", color = "#F3B279")
+
+
+```
+
+### Total scheduled trips ahead
+
+```{r}
+
+### figure out which hearing is next?
+tot_ahead <- events %>%
+  filter(date > today("EST")) %>%
+  nrow()
+
+valueBox(tot_ahead, icon = "fa-plane", color = "#48B052")
+
+
+```
+
+
+
+
+
+<!-- Key SOTs & Remarks  -->
+<!-- ===================================== -->
+<!-- To filter, click on the boxes above the column names. To sort, use the up/down arrows by the column names. -->
+
+<!-- Row {data-height=1000} -->
+<!-- ----------------------------------------------------------------------- -->
+
+<!-- ```{r} -->
+
+<!-- remarks_big <- keyremarks %>%  -->
+<!--   select(candidate, -->
+<!--          date, -->
+<!--          venue, -->
+<!--          city, -->
+<!--          state, -->
+<!--          on_cam, -->
+<!--          ms_number, -->
+<!--          subject_1, -->
+<!--          tc_in, -->
+<!--          key_sound, -->
+<!--          subject_2, -->
+<!--          tc_in_2, -->
+<!--          other_sound, -->
+<!--         source_link -->
+<!--           ) %>%  -->
+<!--   mutate( -->
+<!--     on_cam = as.factor(str_to_lower(on_cam)) -->
+<!--   ) %>%  -->
+<!--   arrange(desc(date)) -->
+
+<!-- datatable(remarks_big, -->
+<!--           rownames = FALSE, -->
+<!--           filter = "top", -->
+<!--           extensions = 'Buttons', -->
+<!--           options = list(searchHighlight = TRUE, bPaginate = FALSE, dom = 'Bfrtip', scrollX=TRUE,scrollY=400,  -->
+<!--      buttons = c('copy', 'excel', 'pdf', 'print') -->
+<!--           )) %>% -->
+<!--   formatDate('date', 'toLocaleDateString') %>% -->
+<!--   formatStyle('candidate', fontWeight = 'bold') -->
+
+
+
+<!-- ``` -->
+
+
+
+
+Candidate Announcements 
+=====================================
+
+Row 
+-----------------------------------------------------------------------
+
+```{r}
+
+announcements %>% 
+    kable() %>% 
+    kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = F,
+                position = "left")
+
+
+```
+
+
+Questions?
+=====================================
+
+Row 
+-----------------------------------------------------------------------
+If you have any questions about this candidate tracker, please give a shout to David Wright or Aaron Kessler in the DC bureau at David.E.Wright@turner.com or Aaron.Kessler@turner.com.  Thanks!
