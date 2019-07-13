@@ -33,6 +33,13 @@ fcheck <- readRDS("saved_versions/fcheck_0711.rds")
 fcheck <- fcheck %>% 
   filter(source == "CNN")
 
+fcheck <- fcheck %>% 
+  mutate(
+    candidate = as.factor(candidate),
+    spectrum_of_truth = as.factor(spectrum_of_truth),
+    subject = as.factor(subject)
+  )
+
 
 # set time object set to EST
 d <- Sys.Date()
