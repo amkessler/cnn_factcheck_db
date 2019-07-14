@@ -6,6 +6,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: fill
+    theme: cerulean
 ---
 
 ```{r setup, include=FALSE}
@@ -192,10 +193,16 @@ ee_nomenu
 ```
 
 
+### Most common TBD
+
+Another chart to go here.
+
+
+
 
 Questions?
 =====================================
 
 Row 
 -----------------------------------------------------------------------
-If you have any questions about this candidate tracker, please give a shout to Aaron Kessler in the DC bureau at Aaron.Kessler@turner.com. 
+If you have any questions about these fact check records, please give a shout to Aaron.Kessler@cnn.com, Matthew.Philips@cnn.com or Cat.Gloria@cnn.com. 
