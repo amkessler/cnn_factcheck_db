@@ -41,6 +41,11 @@ fcheck <- fcheck %>%
     subject = as.factor(subject)
   )
 
+#number of candidates
+cands_included <- fcheck %>% 
+  count(candidate) %>% 
+  nrow()
+
 
 # set time object set to EST
 d <- Sys.Date()
@@ -89,7 +94,43 @@ datatable(fcheck_table,
 Summary Counts
 =====================================
 
-Row 
+
+Row {data-height=200}
+-----------------------------------------------------------------------
+
+### Total CNN Fact Checks
+
+```{r}
+
+tot <- nrow(fcheck)
+
+valueBox(tot, icon = "fa-pencil", color = "lightblue")
+
+
+```
+
+### Candidates included
+
+```{r}
+
+valueBox(cands_included, icon = "fa-users", color = "lightgreen")
+
+
+```
+
+### Candidates w/o records
+
+```{r}
+
+cands_not_included <- (24 - cands_included)
+
+valueBox(cands_not_included, icon = "fa-frown", color = "#f4a8a7")
+
+
+```
+
+
+Row {data-height=800}
 -----------------------------------------------------------------------
 
 
@@ -156,8 +197,8 @@ ee_nomenu
 ```
 
 
-Row 
------------------------------------------------------------------------
+<!-- Row  -->
+<!-- ----------------------------------------------------------------------- -->
 
 ### Most common subjects
 
@@ -191,10 +232,6 @@ ee_nomenu
 
 ```
 
-
-### Most common TBD
-
-Another chart to go here.
 
 
 
