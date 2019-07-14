@@ -41,6 +41,9 @@ fcheck <- fcheck %>%
     subject = as.factor(subject)
   )
 
+#convert link to html hyperlink format
+fcheck$link <- paste0("<a href='", fcheck$link, "' target='_blank'>", fcheck$link, "</a>")
+
 #number of candidates
 cands_included <- fcheck %>% 
   count(candidate) %>% 
@@ -59,8 +62,9 @@ t <- .POSIXct(t, "EST")
 
 Searchable Database
 ===================================== 
-Published fact checks through `r format(d, format="%b %d")`. To filter, click on the boxes above the columns. To sort, use the up/down arrows by the column names. To search globally by keywords, use the search box on the right. (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`) 
-<!-- (This dashboard was last updated at `r format(Sys.time(), "%a %b %d %X")`)  -->
+Published fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
+<!-- (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`)  -->
+
 
 Row 
 -----------------------------------------------------------------------
@@ -83,6 +87,7 @@ fcheck_table <- fcheck %>%
 datatable(fcheck_table, 
           rownames = FALSE, 
           filter = "top",
+          escape = FALSE,
           options = list(searchHighlight = TRUE)) %>% 
   formatDate('date', 'toDateString') %>% 
   formatStyle('candidate', fontWeight = 'bold')
