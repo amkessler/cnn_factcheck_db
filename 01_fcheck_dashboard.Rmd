@@ -79,9 +79,8 @@ datatable(fcheck_table,
           rownames = FALSE, 
           filter = "top",
           options = list(searchHighlight = TRUE)) %>% 
-  formatDate('date', 'toDateString') %>%  
-  # formatDate('thru_date', 'toDateString') %>%
-  formatStyle('candidate', fontWeight = 'bold') 
+  formatDate('date', 'toDateString') %>% 
+  formatStyle('candidate', fontWeight = 'bold')
 
 
 ```

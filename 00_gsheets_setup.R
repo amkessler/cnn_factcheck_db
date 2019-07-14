@@ -35,8 +35,8 @@ fcheck <- fcheck %>%
     date = mdy(date),
     candidate = str_trim(str_to_upper(candidate)),
     spectrum_of_truth = str_trim(str_to_upper(spectrum_of_truth)),
-    claim = str_trim(str_to_upper(claim)),
-    fact_check = str_trim(str_to_upper(fact_check)),
+    # claim = str_trim(str_to_upper(claim)),
+    # fact_check = str_trim(str_to_upper(fact_check)),
     subject = str_trim(str_to_upper(subject)),
     source = str_trim(str_to_upper(source))
   )
@@ -46,9 +46,12 @@ saveRDS(fcheck, "saved_versions/fcheck_saved.rds")
 
 
 
+#### -------------------------------------------
+
+
 
 ### local use -- start here with loading saved file instead of above: ####
-fcheck <- readRDS("saved_versions/fcheck_saved.rds")
+# fcheck <- readRDS("saved_versions/fcheck_saved.rds")
 
 
 
