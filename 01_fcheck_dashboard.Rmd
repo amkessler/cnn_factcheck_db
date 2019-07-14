@@ -153,7 +153,7 @@ byspectrum <- fcheck %>%
 d <- ggplot(data = byspectrum, aes(x = reorder(spectrum_of_truth, -n), y = n)) +
   geom_col(
     # color = "#848484",
-    fill = "#FFC966") +
+    fill = "lightblue") +
   # coord_flip() +
   theme_minimal()
 
@@ -188,7 +188,7 @@ bycand <- fcheck %>%
 e <- ggplot(data = bycand, aes(x = reorder(candidate, -n), y = n)) +
   geom_col(
     # color = "#848484",
-    fill = "#FFC966") +
+    fill = "#A8E9A8") +
   # coord_flip() +
   theme_minimal()
 
@@ -224,7 +224,7 @@ bysubject <- fcheck %>%
 e <- ggplot(data = bysubject, aes(x = reorder(subject, -n), y = n)) +
   geom_col(
     # color = "#848484",
-    fill = "#FFC966") +
+    fill = "#f4a8a7") +
   # coord_flip() +
   theme_minimal()
 
