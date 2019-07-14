@@ -42,13 +42,13 @@ fcheck <- fcheck %>%
   )
 
 #save version to file for later offline use
-saveRDS(fcheck, "saved_versions/fcheck_0711.rds")
+saveRDS(fcheck, "saved_versions/fcheck_saved.rds")
 
 
 
 
 ### local use -- start here with loading saved file instead of above: ####
-fcheck <- readRDS("saved_versions/fcheck_0711.rds")
+fcheck <- readRDS("saved_versions/fcheck_saved.rds")
 
 
 

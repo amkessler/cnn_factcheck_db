@@ -29,7 +29,7 @@ library(tigris)
 options(tigris_class = "sf")
 
 #use saved version of data (for now during development)
-fcheck <- readRDS("saved_versions/fcheck_0711.rds")
+fcheck <- readRDS("saved_versions/fcheck_saved.rds")
 
 fcheck <- fcheck %>% 
   filter(source == "CNN")
