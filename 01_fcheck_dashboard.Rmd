@@ -68,7 +68,7 @@ t <- .POSIXct(t, "EST")
 Searchable Database
 ===================================== 
 Published fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
-<!-- (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`)  -->
+(Last updated on `r format(t, format="%B %d %I:%M %p %Z")`)
 
 
 Row 
@@ -119,11 +119,11 @@ valueBox(tot, icon = "fa-pencil", color = "lightblue")
 
 ```
 
-### Total candidates with FCs
+### Total candidates included
 
 ```{r}
 
-valueBox(cands_included, icon = "fa-users", color = "lightgreen")
+valueBox(cands_included, icon = "fa-users", color = "#A8E9A8")
 
 
 ```
@@ -251,4 +251,4 @@ Questions?
 
 Row 
 -----------------------------------------------------------------------
-If you have any questions about these fact check records, please give a shout to Aaron.Kessler@cnn.com, Matthew.Philips@cnn.com or Cat.Gloria@cnn.com. 
+If you have any questions about these fact checks, please give a shout to Aaron.Kessler@cnn.com, Matthew.Philips@cnn.com or Cat.Gloria@cnn.com. 
