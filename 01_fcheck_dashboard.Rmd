@@ -32,17 +32,23 @@ options(tigris_class = "sf")
 fcheck <- readRDS("saved_versions/fcheck_saved.rds")
 
 fcheck <- fcheck %>% 
-  filter(source == "CNN")
-
-fcheck <- fcheck %>% 
   mutate(
     candidate = as.factor(candidate),
+    source = as.factor(source),
     spectrum_of_truth = as.factor(spectrum_of_truth),
     subject = as.factor(subject)
   )
 
 #convert link to html hyperlink format
 fcheck$link <- paste0("<a href='", fcheck$link, "' target='_blank'>", fcheck$link, "</a>")
+
+#save version with ALL records (CNN and non-CNN alike)
+fcheck_all <- fcheck
+
+#filter for just CNN
+fcheck <- fcheck %>% 
+  filter(source == "CNN")
+
 
 #number of candidates
 cands_included <- fcheck %>% 
@@ -65,9 +71,9 @@ t <- .POSIXct(t, "EST")
 ```
 
 
-Searchable Database
+Searchable Database (CNN)
 ===================================== 
-Published fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
+Published CNN fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
 (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`)
 
 
@@ -101,7 +107,7 @@ datatable(fcheck_table,
 ```
 
 
-Summary Counts
+Summary Counts (CNN)
 =====================================
 
 
@@ -242,6 +248,43 @@ ee_nomenu
 
 ```
 
+
+
+Searchable Database (All Sources)
+===================================== 
+Published fact checks from a curated list of fact-checking and news organization sites. This includes CNN itself but also ones like Politifact, the NYT, AP, etc. 
+To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
+
+
+Row 
+-----------------------------------------------------------------------
+
+### {data-width=800}
+
+```{r}
+
+#searchable table
+
+fcheck_all_table <- fcheck_all %>% 
+  select(source,
+         candidate,
+         date,
+         spectrum_of_truth,
+         subject,
+         claim,
+         fact_check,
+         link)
+
+datatable(fcheck_all_table, 
+          rownames = FALSE, 
+          filter = "top",
+          escape = FALSE,
+          options = list(searchHighlight = TRUE)) %>% 
+  formatDate('date', 'toDateString') %>%  
+  formatStyle('source', color = 'darkred')
+
+
+```
 
 
 
