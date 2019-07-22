@@ -29,7 +29,36 @@ library(tigris)
 options(tigris_class = "sf")
 
 #use saved version of data (for now during development)
-fcheck <- readRDS("saved_versions/fcheck_saved.rds")
+# fcheck <- readRDS("saved_versions/fcheck_saved.rds")
+
+
+#import live version from google sheet
+#register google sheet
+mykey <- Sys.getenv("CNNfcheck_KEY")
+fc2020 <- gs_key(mykey)
+
+#list worksheets in the google sheet
+gs_ws_ls(fc2020)
+
+#read in all the data in a sheet
+fcheck <- fc2020 %>% 
+  gs_read(ws = "Sheet1") %>% 
+  clean_names() 
+
+names(fcheck)
+
+#set formatting of certain columns
+fcheck <- fcheck %>% 
+  mutate(
+    date = mdy(date),
+    candidate = str_trim(str_to_upper(candidate)),
+    spectrum_of_truth = str_trim(str_to_upper(spectrum_of_truth)),
+    # claim = str_trim(str_to_upper(claim)),
+    # fact_check = str_trim(str_to_upper(fact_check)),
+    subject = str_trim(str_to_upper(subject)),
+    source = str_trim(str_to_upper(source))
+  )
+
 
 fcheck <- fcheck %>% 
   mutate(
@@ -281,7 +310,7 @@ datatable(fcheck_all_table,
           escape = FALSE,
           options = list(searchHighlight = TRUE)) %>% 
   formatDate('date', 'toDateString') %>%  
-  formatStyle('source', color = 'darkred')
+  formatStyle('source', color = 'green')
 
 
 ```
