@@ -9,7 +9,7 @@ library(googlesheets)
 
 
 #this will trigger a web page to authenticate with google account
-# gs_ls() 
+gs_ls()
 
 #register google sheet
 mykey <- Sys.getenv("CNNfcheck_KEY")

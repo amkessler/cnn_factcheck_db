@@ -100,9 +100,9 @@ t <- .POSIXct(t, "EST")
 ```
 
 
-Searchable Database (CNN)
+Searchable Database (CNN Only)
 ===================================== 
-Published CNN fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
+Published, Triad-approved CNN fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
 (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`)
 
 
@@ -136,7 +136,7 @@ datatable(fcheck_table,
 ```
 
 
-Summary Counts (CNN)
+Summary Counts (CNN Only)
 =====================================
 
 
@@ -281,7 +281,7 @@ ee_nomenu
 
 Searchable Database (All Sources)
 ===================================== 
-Published fact checks from a curated list of fact-checking and news organization sites. This includes CNN itself but also ones like Politifact, the NYT, AP, etc. 
+Published fact checks from a curated list of fact-checking and news organization sites. This includes CNN itself but also ones like Politifact, the NYT, AP, etc. (Please consult the fact-checking team and/or the Row before including any non-CNN items in your public reporting.)
 To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
 
 
