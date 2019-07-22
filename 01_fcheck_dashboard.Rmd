@@ -310,7 +310,7 @@ datatable(fcheck_all_table,
           escape = FALSE,
           options = list(searchHighlight = TRUE)) %>% 
   formatDate('date', 'toDateString') %>%  
-  formatStyle('source', color = 'green')
+  formatStyle('source', color = 'darkred')
 
 
 ```
