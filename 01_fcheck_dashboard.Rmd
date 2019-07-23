@@ -102,7 +102,7 @@ t <- .POSIXct(t, "EST")
 
 Searchable Database (CNN Only)
 ===================================== 
-Published, Triad-approved CNN fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
+Published and Triad-approved CNN fact checks through `r format(d, format="%b %d")`. To filter the list, click on the boxes above the columns. To sort, click on the arrows by the column names. To search globally by keywords, use the search box on the right. 
 (Last updated on `r format(t, format="%B %d %I:%M %p %Z")`)
 
 
